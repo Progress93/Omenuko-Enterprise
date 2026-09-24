@@ -10,7 +10,7 @@ exports.createUser = async (req, res) => {
         const { username, email, password, phone, gender, role, hasadminaccess } = req.body;
 
         //chech if all fields are provided
-        if (!email || !password || !username || !phone || !gender || !role || !hasadminaccess) {
+        if (!email || !password || !username || !phone || !gender || !role || !hasadminaccess  === undefined) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
@@ -79,7 +79,18 @@ exports.loginUser = async (req, res) => {
         const jwt = require('jsonwebtoken');
         const token = jwt.sign({ id: user._id, email: user.email , role: user.role, hasadminaccess: user.hasadminaccess, gender: user.gender, phone: user.phone, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        return res.status(200).json({ message: 'Login successful', user, token });
+        //return user data and token
+        const userData = {
+            id: user._id,
+            email: user.email,
+            role: user.role,
+            hasadminaccess: user.hasadminaccess,
+            gender: user.gender,
+            phone: user.phone,
+            username: user.username
+        };
+
+        return res.status(200).json({ message: 'Login successful', user: userData, token });
     } catch (error) {
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
