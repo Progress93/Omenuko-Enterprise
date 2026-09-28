@@ -1,5 +1,5 @@
 const Product = require("../Models/product")
-const upload = require("../middleware/upload");
+const upload = require("../Middleware/upload");
 const sendEmail = require("../Middleware/emailsender");
 
 //create a product
