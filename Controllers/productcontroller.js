@@ -21,7 +21,12 @@ const createProduct = async (req, res) => {
 //send email notification to the admin
 const Subject = "New Product Created";
 const Text = `A new product named:\n\nName: ${name}\nSize: ${quantity}\nPrice: ${price}\nDescription: ${description} has been created.`;
-    await sendEmail('reginaldprogress93@gmail.com', Subject, Text);
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: 'reginaldprogress93@gmail.com',
+      subject: Subject,
+      text: Text
+    });
 
     res.status(201).json({ message: "Product created successfully", product });
   } catch (error) {
