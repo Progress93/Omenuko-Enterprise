@@ -1,7 +1,5 @@
-const Product = require("../Models/product");
-const upload = require("../Middleware/upload");
+const Product = require("../Models/product"); 
 const sendEmail = require("../Middleware/emailsender");
-
 
 
 const createProduct = async (req, res) => { 
@@ -20,7 +18,6 @@ const createProduct = async (req, res) => {
         });
     }
 
-    // Basic email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
@@ -37,33 +34,35 @@ const createProduct = async (req, res) => {
         quantity
     });
 
+    // Save product
     await product.save();
 
-    // Email details
-    const Subject = "New Product Created";
-
-    const Text = `A new product has been created:
-
+    // Email content
+    const text = `A new product has been created:
 Name: ${name} 
 Quantity: ${quantity} 
 Price: ${price} 
 Description: ${description}`;
 
-    // Send email to the email supplied in JSON
-    await sendEmail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: Subject,
-        text: Text
-    });
+    // Send email
+    try {
+        await sendEmail({
+            to: email,
+            subject: "New Product Created",
+            text: text
+        });
+    } catch (emailError) {
+        console.error("Email sending failed:", emailError.message);
+    }
 
+    // Product was successfully created
     res.status(201).json({
-        message: "Product created successfully and email sent",
+        message: "Product created successfully",
         product
     });
 
 } catch (error) {
-    console.error(error);
+    console.error("Product creation failed:", error);
 
     res.status(500).json({
         message: "Failed to create product",
@@ -71,6 +70,7 @@ Description: ${description}`;
     });
 }
 };
+
 
 
 // create a product with image
