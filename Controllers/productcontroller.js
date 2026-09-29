@@ -1,37 +1,75 @@
-const Product = require("../Models/product")
+const Product = require("../Models/product");
 const upload = require("../Middleware/upload");
 const sendEmail = require("../Middleware/emailsender");
 
-//create a product
-const createProduct = async (req, res) => {
-  try {
-    const { name, description, price, quantity } = req.body;
-    //check all required fields are provided
-    if (!name || !description || !price || !quantity) {
-      return res.status(400).json({ message: "Please provide all required fields" });
-    }
-    const product = new Product({ 
-      name,
-       description,
-        price,
-         quantity 
+
+
+const createProduct = async (req, res) => { 
+  try { 
+    const { 
+      name, 
+      description, 
+      price, 
+      quantity, 
+      email } = req.body;
+
+    // Validate email
+    if (!email) {
+        return res.status(400).json({
+            message: "Email is required"
         });
-    await product.save();
-    
-//send email notification to the admin
-const Subject = "New Product Created";
-const Text = `A new product named:\n\nName: ${name}\nSize: ${quantity}\nPrice: ${price}\nDescription: ${description} has been created.`;
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: 'reginaldprogress93@gmail.com',
-      subject: Subject,
-      text: Text
+    }
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({
+            message: "Please provide a valid email address"
+        });
+    }
+
+    // Create product
+    const product = new Product({
+        name,
+        description,
+        price,
+        quantity
     });
 
-    res.status(201).json({ message: "Product created successfully", product });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+    await product.save();
+
+    // Email details
+    const Subject = "New Product Created";
+
+    const Text = `A new product has been created:
+
+Name: ${name} 
+Quantity: ${quantity} 
+Price: ${price} 
+Description: ${description}`;
+
+    // Send email to the email supplied in JSON
+    await sendEmail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: Subject,
+        text: Text
+    });
+
+    res.status(201).json({
+        message: "Product created successfully and email sent",
+        product
+    });
+
+} catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+        message: "Failed to create product",
+        error: error.message
+    });
+}
 };
 
 
